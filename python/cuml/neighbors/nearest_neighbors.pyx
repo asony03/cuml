@@ -175,7 +175,7 @@ class NearestNeighbors(Base):
                  n_neighbors=5,
                  verbose=False,
                  handle=None,
-                 algorithm="brute",
+                 algorithm="full",
                  metric="euclidean"):
         """
         Construct the NearestNeighbors object for training and querying.
@@ -186,7 +186,7 @@ class NearestNeighbors(Base):
         verbose : boolean print verbose logs
         handle : cumlHandle the cumlHandle resources to use
         algorithm : string the query algorithm to use. Currently, only
-                    'brute' is supported.
+                    'full' is supported.
         metric : string distance metric to use. (default="euclidean").
         """
 
@@ -336,7 +336,7 @@ class NearestNeighbors(Base):
         cdef uintptr_t x_ctype_st_query = X_ctype
         cdef uintptr_t x_ctype_st_source = self.X_ctype
 
-        if self.algorithm == 'brute':
+        if self.algorithm == 'full':
             brute_force_knn(
                 handle_[0],
                 deref(inputs),
