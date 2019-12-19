@@ -382,6 +382,7 @@ if(BUILD_CUML_CPP_LIBRARY)
     src/kalman_filter/lkf_py.cu
     src/kmeans/kmeans.cu
     src/knn/knn.cu
+    src/knn/knnjoin.cu
     src/metrics/metrics.cu
     src/metrics/trustworthiness.cu
     src/pca/pca.cu

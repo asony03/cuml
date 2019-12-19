@@ -79,6 +79,21 @@ cdef extern from "cuml/neighbors/knn.hpp" namespace "ML":
         bool rowMajorQuery
     ) except +
 
+cdef extern from "cuml/neighbors/knnjoin.hpp":
+
+    void sweet_knn(
+        int arg1,
+        int arg2,
+        int arg3,
+        int arg4,
+        int arg5,
+        int arg6,
+        float *arg7,
+        float *arg8,
+        int64_t *res_I,
+        float *res_D,  
+    ) except +
+
 
 class NearestNeighbors(Base):
     """
@@ -238,6 +253,9 @@ class NearestNeighbors(Base):
 
         self.n_indices = 1
 
+        self.X = X
+        self.X_ctype = X_ctype
+
         return self
 
     def kneighbors(self, X=None, n_neighbors=None,
@@ -315,21 +333,37 @@ class NearestNeighbors(Base):
 
         cdef cumlHandle* handle_ = <cumlHandle*><size_t>self.handle.getHandle()
 
-        cdef uintptr_t x_ctype_st = X_ctype
+        cdef uintptr_t x_ctype_st_query = X_ctype
+        cdef uintptr_t x_ctype_st_source = self.X_ctype
 
-        brute_force_knn(
-            handle_[0],
-            deref(inputs),
-            deref(sizes),
-            <int>self.n_dims,
-            <float*>x_ctype_st,
-            <int>N,
-            <int64_t*>I_ptr,
-            <float*>D_ptr,
-            <int>n_neighbors,
-            False,
-            False
-        )
+        if self.algorithm == 'brute':
+            brute_force_knn(
+                handle_[0],
+                deref(inputs),
+                deref(sizes),
+                <int>self.n_dims,
+                <float*>x_ctype_st_query,
+                <int>N,
+                <int64_t*>I_ptr,
+                <float*>D_ptr,
+                <int>n_neighbors,
+                False,
+                False
+            )
+
+        elif self.algorithm == 'sweet':
+            sweet_knn(
+                <int>X.shape[0],
+                <int>self.X.shape[0],
+                <int>self.n_dims,
+                2,
+                2,
+                <int>n_neighbors,
+                <float*>x_ctype_st_source,
+                <float*>x_ctype_st_query,
+                <int64_t*>I_ptr,
+                <float*>D_ptr,                
+            )
 
         I_ndarr = I_ndarr.reshape((N, n_neighbors))
         D_ndarr = D_ndarr.reshape((N, n_neighbors))
